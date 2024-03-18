@@ -1,0 +1,30 @@
+# Functionality
+# 1) Format & Validate
+# 2) Terraform Plan
+# 3) Run the apply to AWS Account
+
+steps:
+  - label: ":terraform: Format and validate"
+    commands:
+      - "cd terraform && terraform fmt -check"
+      - "cd terraform && terraform init -backend=false"
+      - "cd terraform && terraform validate"
+    agents:
+      queue: "default"
+
+  - wait
+
+  - label: ":terraform: Plan"
+    command: "cd terraform && terraform plan -out=tfplan"
+    agents:
+      queue: "default"
+    artifact_paths: "terraform/tfplan"
+
+  - wait
+
+  - label: ":terraform: Apply"
+    command: "cd terraform && terraform apply tfplan"
+    agents:
+      queue: "default"
+    concurrency: 1
+    concurrency_group: "terraform-applies"
